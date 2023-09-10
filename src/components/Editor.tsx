@@ -34,7 +34,7 @@ function Editor() {
         'link', 'image'
       ];
   return (
-    <Box sx={{ height: '100vh', width: '100%' }}>
+    <Box sx={{ height: '100vh', width: '100%', backgroundColor: '#f5f5f5' }}>
     <ReactQuill theme="snow" value={value} onChange={setValue} modules={modules} formats={formats}/>
     </Box>
   )
