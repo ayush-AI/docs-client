@@ -1,41 +1,53 @@
-import React, { useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import ReactQuill from 'react-quill';
+import { modules, formats } from '../utils/QuillConfig';
 import 'react-quill/dist/quill.snow.css';
 import { Box } from '@mui/material';
+import { io, Socket } from 'socket.io-client';
 
 function Editor() {
     const [value, setValue] = useState('');
-    const modules = {
-        toolbar: [
-            ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
-            ['blockquote', 'code-block', 'image', 'link'],
-          
-            [{ 'header': 1 }, { 'header': 2 }],               // custom button values
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
-            [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
-            [{ 'direction': 'rtl' }],                         // text direction
-          
-            [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
-            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-          
-            [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
-            [{ 'font': [] }],
-            [{ 'align': [] }],
-          
-            ['clean']                                         // remove formatting button
-          ],   
-      };
+    const [socket, setSocket] = useState<Socket>();
+    const quillRef = useRef(null);
+    
 
-    const formats = [
-        'header',
-        'bold', 'italic', 'underline', 'strike', 'blockquote','code-block',
-        'list', 'bullet', 'indent',
-        'link', 'image'
-      ];
+    useEffect(() => {
+        const s = io('http://localhost:9000');
+        setSocket(s);
+        return () => {
+            s.disconnect();
+        }
+    },[]);
+
+    useEffect(() => {
+        if(socket == null || quillRef == null) return;
+        
+        const handler = (delta: unknown, oldDelta: unknown, source: unknown) => {
+            if(source !== 'user') return;
+            socket.emit('send-changes', delta);
+        }
+        quillRef.current?.getEditor().on('text-change', handler);
+        return () => {
+            quillRef.current?.getEditor().off('text-change', handler);
+        }
+    },[socket, quillRef]);
+
+    useEffect(() => {
+        if(socket == null || quillRef == null) return;
+        
+        const handler = (delta: unknown) => {
+            quillRef.current?.getEditor().updateContents(delta);
+        }
+        socket.on('receive-changes', handler);
+        return () => {
+            socket.off('receive-changes', handler);
+        }
+    },[socket, quillRef]);
+    
+    
   return (
     <Box sx={{ height: '100vh', width: '100%', backgroundColor: '#f5f5f5' }}>
-    <ReactQuill theme="snow" value={value} onChange={setValue} modules={modules} formats={formats}/>
+    <ReactQuill theme="snow" value={value} onChange={setValue} modules={modules} formats={formats} ref={quillRef}/>
     </Box>
   )
 }
