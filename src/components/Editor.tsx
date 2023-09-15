@@ -4,13 +4,14 @@ import { modules, formats } from '../utils/QuillConfig';
 import 'react-quill/dist/quill.snow.css';
 import { Box } from '@mui/material';
 import { io, Socket } from 'socket.io-client';
+import { useParams } from 'react-router-dom';
 
 function Editor() {
     const [value, setValue] = useState('');
     const [socket, setSocket] = useState<Socket>();
     const quillRef = useRef(null);
+    const { id: documentId } = useParams();
     
-
     useEffect(() => {
         const s = io('http://localhost:9000');
         setSocket(s);
@@ -18,6 +19,20 @@ function Editor() {
             s.disconnect();
         }
     },[]);
+
+    useEffect(() => { 
+        quillRef.current?.getEditor().disable();
+        quillRef.current?.getEditor().setText('Loading...');
+    },[]);
+
+    useEffect(() => {
+        if(socket == null || quillRef == null) return;
+        socket.once('load-document', document => {
+            quillRef.current?.getEditor().setContents(document);
+            quillRef.current?.getEditor().enable();
+        });
+        socket.emit('get-document', documentId);
+    },[socket, quillRef]);
 
     useEffect(() => {
         if(socket == null || quillRef == null) return;
