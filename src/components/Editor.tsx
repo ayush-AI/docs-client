@@ -32,7 +32,7 @@ function Editor() {
             quillRef.current?.getEditor().enable();
         });
         socket.emit('get-document', documentId);
-    },[socket, quillRef]);
+    },[socket, quillRef, documentId]);
 
     useEffect(() => {
         if(socket == null || quillRef == null) return;
@@ -56,6 +56,17 @@ function Editor() {
         socket.on('receive-changes', handler);
         return () => {
             socket.off('receive-changes', handler);
+        }
+    },[socket, quillRef]);
+
+    useEffect(() => {
+        if(socket == null || quillRef == null) return;
+        
+        const interval = setInterval(() => {
+            socket.emit('save-document', quillRef.current?.getEditor().getContents());
+        }, 2000);
+        return () => {
+            clearInterval(interval);
         }
     },[socket, quillRef]);
     
