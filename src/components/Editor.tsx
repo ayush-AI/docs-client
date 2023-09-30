@@ -13,7 +13,7 @@ function Editor() {
     const { id: documentId } = useParams();
     
     useEffect(() => {
-        const s = io('http://localhost:9000');
+        const s = io(import.meta.env.VITE_API_URL as string || 'http://localhost:5000', { transports: ['websocket'] });
         setSocket(s);
         return () => {
             s.disconnect();
