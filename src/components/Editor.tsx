@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import ReactQuill from 'react-quill';
+import { DeltaStatic } from 'quill';
 import { modules, formats } from '../utils/QuillConfig';
 import 'react-quill/dist/quill.snow.css';
 import { Box } from '@mui/material';
@@ -9,7 +10,7 @@ import { useParams } from 'react-router-dom';
 function Editor() {
     const [value, setValue] = useState('');
     const [socket, setSocket] = useState<Socket>();
-    const quillRef = useRef(null);
+    const quillRef = useRef<ReactQuill>(null);
     const { id: documentId } = useParams();
     
     useEffect(() => {
@@ -36,8 +37,8 @@ function Editor() {
 
     useEffect(() => {
         if(socket == null || quillRef == null) return;
-        
-        const handler = (delta: unknown, oldDelta: unknown, source: unknown) => {
+
+        const handler = (delta: unknown, _oldDelta: unknown, source: unknown) => {
             if(source !== 'user') return;
             socket.emit('send-changes', delta);
         }
@@ -50,7 +51,7 @@ function Editor() {
     useEffect(() => {
         if(socket == null || quillRef == null) return;
         
-        const handler = (delta: unknown) => {
+        const handler = (delta: DeltaStatic) => {
             quillRef.current?.getEditor().updateContents(delta);
         }
         socket.on('receive-changes', handler);
