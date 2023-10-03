@@ -5,7 +5,11 @@ import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
 import { Box } from "@mui/material";
 
-function Navbar() {
+interface NavbarProps {
+  handlePrint: () => void;
+}
+
+function Navbar(props: NavbarProps) {
   return (
     <>
       <AppBar
@@ -27,7 +31,6 @@ function Navbar() {
                 variant="h6"
                 noWrap
                 component="a"
-                href="#app-bar-with-responsive-menu"
                 sx={{
                   mr: 2,
                   display: { xs: "none", md: "flex" },
@@ -42,7 +45,9 @@ function Navbar() {
               </Typography>
             </Box>
             <Box sx={{ flexGrow: 0 }}>
-              <Button variant="contained">Export as PDF</Button>
+              <Button variant="contained" onClick={props.handlePrint}>
+                Export as PDF
+              </Button>
             </Box>
           </Toolbar>
           {/* <Button>Export as PDF</Button> */}

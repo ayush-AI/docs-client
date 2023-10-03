@@ -7,12 +7,14 @@ import { Box } from "@mui/material";
 import { io, Socket } from "socket.io-client";
 import { useParams } from "react-router-dom";
 import Navbar from "./Navbar";
+import jsPDF from "jspdf";
 
 function Editor() {
   const [value, setValue] = useState("");
   const [socket, setSocket] = useState<Socket>();
   const quillRef = useRef<ReactQuill>(null);
   const { id: documentId } = useParams();
+  const makePdf = new jsPDF();
 
   useEffect(() => {
     const s = io(
@@ -67,7 +69,6 @@ function Editor() {
 
   useEffect(() => {
     if (socket == null || quillRef == null) return;
-
     const interval = setInterval(() => {
       socket.emit("save-document", quillRef.current?.getEditor().getContents());
     }, 2000);
@@ -76,10 +77,29 @@ function Editor() {
     };
   }, [socket, quillRef]);
 
+  const handlePrint = () => {
+    const editor = quillRef.current?.getEditor();
+    if (editor) {
+      const unprivilegedEditor =
+        quillRef.current?.makeUnprivilegedEditor(editor);
+      const content = unprivilegedEditor?.getHTML();
+      makePdf.html(content as string, {
+        callback: function (makePdf) {
+          // For saving the PDF
+          makePdf.save("test.pdf");
+        },
+        x: 15,
+        y: 15,
+        width: 170, // A4 width: 210
+        windowWidth: 650,
+      });
+    }
+  };
+
   return (
     <>
       <Box sx={{ height: "100vh", width: "100%", backgroundColor: "#f5f5f5" }}>
-        <Navbar />
+        <Navbar handlePrint={handlePrint} />
         <ReactQuill
           theme="snow"
           value={value}
