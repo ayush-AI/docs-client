@@ -4,12 +4,22 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
 import { Box } from "@mui/material";
+import React from "react";
 
 interface NavbarProps {
   handlePrint: () => void;
+  title: string;
+  setTitle: React.Dispatch<React.SetStateAction<string>>;
 }
 
 function Navbar(props: NavbarProps) {
+  const [width, setWidth] = React.useState<number>(224);
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    props.setTitle(e.target.value);
+    setWidth(16 + e.target.value.length * 11);
+  };
+
   return (
     <>
       <AppBar
@@ -26,7 +36,14 @@ function Navbar(props: NavbarProps) {
       >
         <Container maxWidth="xl">
           <Toolbar disableGutters>
-            <Box sx={{ flexGrow: 1 }}>
+            <Box
+              sx={{
+                flexGrow: 1,
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
               <Typography
                 variant="h6"
                 noWrap
@@ -43,6 +60,19 @@ function Navbar(props: NavbarProps) {
               >
                 DOCS
               </Typography>
+              <input
+                value={props.title}
+                onChange={(e) => handleTitleChange(e)}
+                style={{
+                  border: "none",
+                  fontSize: "1.5rem",
+                  minWidth: "14px",
+                  width: `${width}px`,
+                  maxWidth: "1150px",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              ></input>
             </Box>
             <Box sx={{ flexGrow: 0 }}>
               <Button variant="contained" onClick={props.handlePrint}>

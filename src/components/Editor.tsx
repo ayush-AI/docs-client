@@ -11,6 +11,7 @@ import jsPDF from "jspdf";
 
 function Editor() {
   const [value, setValue] = useState("");
+  const [title, setTitle] = useState<string>("Untitled Document");
   const [socket, setSocket] = useState<Socket>();
   const quillRef = useRef<ReactQuill>(null);
   const { id: documentId } = useParams();
@@ -99,7 +100,7 @@ function Editor() {
   return (
     <>
       <Box sx={{ height: "100vh", width: "100%", backgroundColor: "#f5f5f5" }}>
-        <Navbar handlePrint={handlePrint} />
+        <Navbar handlePrint={handlePrint} title={title} setTitle={setTitle} />
         <ReactQuill
           theme="snow"
           value={value}
