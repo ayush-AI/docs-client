@@ -16,10 +16,24 @@ function Navbar(props: NavbarProps) {
   const [width, setWidth] = React.useState<number>(224);
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value.length === 0) {
+      props.setTitle("Untitled Document");
+    }
     props.setTitle(e.target.value);
-    setWidth(16 + e.target.value.length * 11);
   };
 
+  const handleTitleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.value.length === 0) {
+      props.setTitle("Untitled Document");
+    }
+  };
+
+  React.useEffect(() => {
+    // if (props.title.length === 0) {
+    //   setWidth(224);
+    // }
+    setWidth(16 + props.title.length * 11.5);
+  }, [props.title, width]);
   return (
     <>
       <AppBar
@@ -63,6 +77,7 @@ function Navbar(props: NavbarProps) {
               <input
                 value={props.title}
                 onChange={(e) => handleTitleChange(e)}
+                onBlur={(e) => handleTitleBlur(e)}
                 style={{
                   border: "none",
                   fontSize: "1.5rem",

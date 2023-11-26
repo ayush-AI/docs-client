@@ -11,7 +11,7 @@ import jsPDF from "jspdf";
 
 function Editor() {
   const [value, setValue] = useState("");
-  const [title, setTitle] = useState<string>("Untitled Document");
+  const [title, setTitle] = useState<string>("");
   const [socket, setSocket] = useState<Socket>();
   const quillRef = useRef<ReactQuill>(null);
   const { id: documentId } = useParams();
@@ -35,9 +35,9 @@ function Editor() {
 
   useEffect(() => {
     if (socket == null || quillRef == null) return;
-    socket.once("load-document", (document) => {
-      console.log(document);
+    socket.once("load-document", (document, title) => {
       quillRef.current?.getEditor().setContents(document);
+      setTitle(title);
       quillRef.current?.getEditor().enable();
     });
     socket.emit("get-document", documentId);
@@ -70,13 +70,28 @@ function Editor() {
 
   useEffect(() => {
     if (socket == null || quillRef == null) return;
+
+    const titleHandler = (title: string) => {
+      setTitle(title);
+    };
+    socket.on("recieve-title", titleHandler);
+    return () => {
+      socket.off("recieve-title", titleHandler);
+    };
+  }, [socket, quillRef]);
+
+  useEffect(() => {
+    if (socket == null || quillRef == null) return;
     const interval = setInterval(() => {
       socket.emit("save-document", quillRef.current?.getEditor().getContents());
     }, 2000);
+    if (title.length > 0) {
+      socket.emit("update-title", title);
+    }
     return () => {
       clearInterval(interval);
     };
-  }, [socket, quillRef]);
+  }, [socket, quillRef, title]);
 
   const handlePrint = () => {
     const editor = quillRef.current?.getEditor();
